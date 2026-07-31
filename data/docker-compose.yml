@@ -11,6 +11,9 @@ services:
       - DB2INST1_PASSWORD=admin
       - DBNAME=testdb    
       - ARCHIVE_LOGS=true
+      - TZ=Asia/Shanghai              # 设置容器内 Linux 系统时区，UTC -> CST (China Standard Time: UTC+8)
+      - DB2CODEPAGE=1208              # 可选，确保字符集兼容
+      - DB2_DBTIMEUTC=OFF             # 关键：强制 DB2 使用本地时区
   elasticsearch:
     image: elastic/elasticsearch:7.6.0
     environment:
@@ -18,6 +21,7 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
+      - TZ=Asia/Shanghai           # 添加这一行，设置容器时区
     ports:
       - "9200:9200"
       - "9300:9300"

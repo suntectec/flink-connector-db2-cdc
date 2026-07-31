@@ -1,16 +1,20 @@
 services:
   jobmanager:
-    image: flink:latest
+    image: flink:2.3.0
     ports:
       - "8081:8081"
     command: jobmanager
     environment:
       - |
         FLINK_PROPERTIES=
-        jobmanager.rpc.address: jobmanager        
+        jobmanager.rpc.address: jobmanager
+    volumes:
+      - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
+    networks:
+      - data_default           # 加入同一个网络
 
   taskmanager:
-    image: flink:latest
+    image: flink:2.3.0
     depends_on:
       - jobmanager
     command: taskmanager
@@ -19,10 +23,14 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
-        taskmanager.numberOfTaskSlots: 2        
-
+        taskmanager.numberOfTaskSlots: 2
+    volumes:
+      - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
+    networks:
+      - data_default           # 加入同一个网络
+                     
   sql-client:
-    image: flink:latest
+    image: flink:2.3.0
     depends_on:
       - jobmanager
     command: bin/sql-client.sh
@@ -31,3 +39,15 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         rest.address: jobmanager
+    volumes:
+      - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
+      - ../scripts:/opt/flink/scripts  # 可选：挂载 SQL 脚本目录
+    networks:
+      - data_default           # 加入同一个网络
+    stdin_open: true
+    tty: true
+
+# 声明使用已存在的外部网络（注意是 external: true）
+networks:
+  data_default:
+    external: true
