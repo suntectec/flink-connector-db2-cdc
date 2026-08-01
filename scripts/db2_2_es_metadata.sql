@@ -23,7 +23,7 @@ CREATE TABLE products (
     'table-name' = 'DB2INST1.PRODUCTS'
   );
   
-CREATE TABLE es_products_impl_soft_del (
+CREATE TABLE es_products_metadata (
     -- 业务数据列
     ID INT NOT NULL,
     NAME STRING,
@@ -42,4 +42,4 @@ CREATE TABLE es_products_impl_soft_del (
      'index' = 'enriched_products_14'
  );
 
-INSERT INTO es_products_impl_soft_del SELECT *, CURRENT_TIMESTAMP AS write_time FROM products;
+INSERT INTO es_products_metadata SELECT *, CURRENT_TIMESTAMP AS write_time FROM products;

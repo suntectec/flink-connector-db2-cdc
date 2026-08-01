@@ -124,5 +124,5 @@ DELETE FROM DB2INST1.PRODUCTS WHERE NAME='jagger';
 ## Submit Job
 ```bash
 # 新建一个 sql-client 容器来执行命令提交，更干净，不干扰现有容器交互
-docker compose run sql-client ./bin/sql-client.sh -f scripts/db2_2_es_impl_soft_del.sql
+docker compose run sql-client ./bin/sql-client.sh -f scripts/db2_2_es_metadata.sql
 ```
