@@ -5,6 +5,7 @@ services:
       - "8081:8081"
     command: jobmanager
     environment:
+      - TZ=Asia/Shanghai           # 添加 JVM 时区
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
@@ -20,6 +21,7 @@ services:
     command: taskmanager
     scale: 1
     environment:
+      - TZ=Asia/Shanghai           # 添加 JVM 时区
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
@@ -35,6 +37,7 @@ services:
       - jobmanager
     command: bin/sql-client.sh
     environment:
+      - TZ=Asia/Shanghai           # 添加 JVM 时区
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager

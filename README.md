@@ -9,6 +9,9 @@
 
 ## Compose up Container
 ```bash
+docker compose -f data/docker-compose.yml up -d
+docker compose -f compute/docker-compose.yml up -d
+
 # Wait for DB2 to be fully ready (may take 2–3 minutes). Verify DB2 initialization completes.
 docker logs -f data-db2-1
 ```
@@ -22,7 +25,7 @@ docker compose run sql-client ./bin/sql-client.sh -f scripts/db2_2_es.sql
 # docker compose exec sql-client ./bin/sql-client.sh -f scripts/db2_2_es.sql
 ```
 
-## Mock DataChangeEvent
+## Mock DataChangeEvent - Pure CDC Stream
 ### 1. Enter DB2 Client
 ```bash
 # docker exec -it ${containerId} /bin/bash
@@ -46,17 +49,14 @@ e.g.
 suntectec@CoffeeCat:~/myspace/flink-connector-db2-cdc/data$ docker exec -it $(docker ps -qf "name=db2") date
 Sat Aug  1 04:14:43 CST 2026
 ```
-![alt text](image.png)
 
 #### DB Current Timestamp
 ```bash
 # 快速验证 DB2 数据库时间戳
 docker exec $(docker ps -qf "name=db2") bash -c "su - db2inst1 -c 'db2 connect to testdb && db2 \"VALUES CURRENT TIMESTAMP\"'"
-```
 
-DB2 仍然存在时差，因为你设置 TZ=Asia/Shanghai 只影响了容器内 Linux 系统的时区，但 DB2 实例在启动时可能没有正确识别这个变化，或者它仍然使用 UTC 作为默认时区。
+# 若 DB2 仍然存在时差，因为你设置 TZ=Asia/Shanghai 只影响了容器内 Linux 系统的时区，但 DB2 实例在启动时可能没有正确识别这个变化，或者它仍然使用 UTC 作为默认时区。
 
-```bash
 # 进入 DB2 交互式命令行（db2 客户端）
 docker exec -it $(docker ps -qf "name=db2") bash -c "su - db2inst1 -c 'db2 connect to testdb && db2'"
 
@@ -67,22 +67,21 @@ UPDATE DATABASE CONFIGURATION USING DBTIMEUTC OFF
 
 # 重启数据库使配置生效
 db2stop force
+
 db2start
 
 # 重新连接验证
 connect to testdb
 VALUES CURRENT TIMESTAMP
-```
 
-```bash
-## 推荐的一键修复命令（完整版）
-docker exec -it $(docker ps -qf "name=db2") bash -c "su - db2inst1 -c 'source ~/.profile 2>/dev/null; db2set DB2_DBTIMEUTC=OFF; db2set -all | grep DBTIMEUTC; db2stop force; db2start; sleep 3; db2 connect to testdb; db2 \"VALUES CURRENT TIMESTAMP\"'"
+# 一键设置脚本
+docker exec -it $(docker ps -qf "name=db2") bash -c "ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' > /etc/timezone && su - db2inst1 -c 'db2set DB2_DBTIMEUTC=OFF && db2stop force && db2start'"
 ```
 
 ### 3. Enable CDC
 ```bash
 # 检查 ASNCDC 捕获进程是否存在
-ps -ef | grep asncdc
+docker exec -it data-db2-1 bash -c "ps -ef | grep asncdc"
 
 # 要查看 PRODUCTS 表（假设它在 DB2INST1 模式下）的 DATA CAPTURE 状态，你可以使用下面这条 SQL。
 SELECT TABSCHEMA, TABNAME, DATACAPTURE FROM SYSCAT.TABLES WHERE TABSCHEMA = 'DB2INST1' AND TABNAME = 'PRODUCTS';
@@ -115,7 +114,15 @@ INSERT INTO DB2INST1.PRODUCTS VALUES (default,'scooter','Big 2-wheel scooter ',5
 DELETE FROM DB2INST1.PRODUCTS WHERE ID=111;
 
 
-INSERT INTO DB2INST1.PRODUCTS VALUES (default,'jagger','AAA',0.001);
-UPDATE DB2INST1.PRODUCTS SET DESCRIPTION='AAAAAA' WHERE NAME='jagger';
+INSERT INTO DB2INST1.PRODUCTS VALUES (default,'jagger','dd',0.001);
+UPDATE DB2INST1.PRODUCTS SET DESCRIPTION='bb' WHERE NAME='jagger';
 DELETE FROM DB2INST1.PRODUCTS WHERE NAME='jagger';
+```
+
+
+## Add Available Metadata
+## Submit Job
+```bash
+# 新建一个 sql-client 容器来执行命令提交，更干净，不干扰现有容器交互
+docker compose run sql-client ./bin/sql-client.sh -f scripts/db2_2_es_impl_soft_del.sql
 ```
