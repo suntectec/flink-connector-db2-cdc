@@ -20,7 +20,8 @@ CREATE TABLE products (
     'username' = 'db2inst1',
     'password' = 'admin',
     'database-name' = 'TESTDB',
-    'table-name' = 'DB2INST1.PRODUCTS'
+    'table-name' = 'DB2INST1.PRODUCTS',
+    'server-time-zone' = 'Asia/Shanghai'
   );
   
 CREATE TABLE es_products_metadata (
@@ -39,7 +40,7 @@ CREATE TABLE es_products_metadata (
  ) WITH (
      'connector' = 'elasticsearch-7',
      'hosts' = 'http://elasticsearch:9200',
-     'index' = 'enriched_products_14'
+     'index' = 'enriched_products_15'
  );
 
 INSERT INTO es_products_metadata SELECT *, CURRENT_TIMESTAMP AS write_time FROM products;
