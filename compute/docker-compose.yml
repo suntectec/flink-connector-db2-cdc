@@ -11,6 +11,7 @@ services:
         jobmanager.rpc.address: jobmanager
     volumes:
       - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
+      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
     networks:
       - data_default           # 加入同一个网络
 
@@ -28,6 +29,7 @@ services:
         taskmanager.numberOfTaskSlots: 2
     volumes:
       - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
+      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
     networks:
       - data_default           # 加入同一个网络
                      
@@ -45,6 +47,7 @@ services:
     volumes:
       - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
       - ../scripts:/opt/flink/scripts  # 可选：挂载 SQL 脚本目录
+      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
     networks:
       - data_default           # 加入同一个网络
     stdin_open: true
