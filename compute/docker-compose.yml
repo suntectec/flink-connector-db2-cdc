@@ -26,7 +26,7 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
-        taskmanager.numberOfTaskSlots: 2
+        taskmanager.numberOfTaskSlots: 3
     volumes:
       - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
       - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 

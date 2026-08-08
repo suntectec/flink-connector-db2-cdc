@@ -11,11 +11,16 @@ USE CATALOG my_catalog;
 CREATE TABLE word_count (
     word STRING PRIMARY KEY NOT ENFORCED,
     cnt BIGINT
+);
+
+CREATE TABLE my_table (
+    word STRING PRIMARY KEY NOT ENFORCED,
+    cnt BIGINT
 ) WITH (
   'snapshot.time-retained' = '1 h',
   'snapshot.num-retained.min' = '2',
   'snapshot.num-retained.max' = '5'
-);;
+);
 
 -- create a word data generator table
 CREATE TEMPORARY TABLE word_table (
@@ -30,3 +35,5 @@ SET 'execution.checkpointing.interval' = '10 s';
 
 -- write streaming data to dynamic table
 INSERT INTO word_count SELECT word, COUNT(*) FROM word_table GROUP BY word;
+
+INSERT INTO my_table SELECT word, COUNT(*) FROM word_table GROUP BY word;
