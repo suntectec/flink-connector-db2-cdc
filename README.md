@@ -83,6 +83,9 @@ docker exec -it $(docker ps -qf "name=db2") bash -c "ln -sf /usr/share/zoneinfo/
 # 检查 ASNCDC 捕获进程是否存在
 docker exec -it data-db2-1 bash -c "ps -ef | grep asncdc"
 
+# 进入 DB2 交互式命令行（db2 客户端）
+docker exec -it $(docker ps -qf "name=db2") bash -c "su - db2inst1 -c 'db2 connect to testdb && db2'"
+
 # 要查看 PRODUCTS 表（假设它在 DB2INST1 模式下）的 DATA CAPTURE 状态，你可以使用下面这条 SQL。
 SELECT TABSCHEMA, TABNAME, DATACAPTURE FROM SYSCAT.TABLES WHERE TABSCHEMA = 'DB2INST1' AND TABNAME = 'PRODUCTS';
 
@@ -90,6 +93,9 @@ SELECT TABSCHEMA, TABNAME, DATACAPTURE FROM SYSCAT.TABLES WHERE DATACAPTURE != '
 ```
 
 ```bash
+# check ASNCDC status
+VALUES ASNCDC.ASNCDCSERVICES('status','asncdc');
+
 # 开启 ASNCDC
 VALUES ASNCDC.ASNCDCSERVICES('start','asncdc');
 
