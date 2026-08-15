@@ -5,55 +5,56 @@ services:
       - "8081:8081"
     command: jobmanager
     environment:
-      - TZ=Asia/Shanghai           # 添加 JVM 时区
+      - TZ=Asia/Shanghai
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
     volumes:
-      - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
-      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
+      # 依赖 jar 放入仓库 jars/ 目录即可，见 jars/README.md
+      - ../jars:/opt/flink/lib/jars
+      # Paimon warehouse 持久化目录
+      - ../tmp/paimon:/tmp/paimon
     networks:
-      - data_default           # 加入同一个网络
+      - data_default
 
   taskmanager:
     image: flink:2.3.0
     depends_on:
       - jobmanager
     command: taskmanager
-    scale: 1
     environment:
-      - TZ=Asia/Shanghai           # 添加 JVM 时区
+      - TZ=Asia/Shanghai
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 3
     volumes:
-      - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
-      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
+      - ../jars:/opt/flink/lib/jars
+      - ../tmp/paimon:/tmp/paimon
     networks:
-      - data_default           # 加入同一个网络
-                     
+      - data_default
+
   sql-client:
     image: flink:2.3.0
     depends_on:
       - jobmanager
     command: bin/sql-client.sh
     environment:
-      - TZ=Asia/Shanghai           # 添加 JVM 时区
+      - TZ=Asia/Shanghai
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         rest.address: jobmanager
     volumes:
-      - /mnt/d/downloads/jars:/opt/flink/lib/jars # 挂载本地 lib 目录
-      - ../scripts:/opt/flink/scripts  # 可选：挂载 SQL 脚本目录
-      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
+      - ../jars:/opt/flink/lib/jars
+      - ../scripts:/opt/flink/scripts
+      - ../tmp/paimon:/tmp/paimon
     networks:
-      - data_default           # 加入同一个网络
+      - data_default
     stdin_open: true
     tty: true
 
-# 声明使用已存在的外部网络（注意是 external: true）
+# 复用 data/docker-compose.yml 创建的外部网络，保证 Flink 能直连 db2 / elasticsearch
 networks:
   data_default:
     external: true

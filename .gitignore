@@ -1,1 +1,11 @@
-/tmp/paimon/default.db
+# Paimon 本地 warehouse 运行时数据
+/tmp/paimon/
+
+# 依赖 jar（自行下载放入，不入库，见 jars/README.md）
+/jars/*.jar
+
+# Windows 下载产生的垃圾文件（NTFS ADS 形式为 "xxx:Zone.Identifier"，冒号分隔）
+*:Zone.Identifier
+
+# 本地环境
+.env

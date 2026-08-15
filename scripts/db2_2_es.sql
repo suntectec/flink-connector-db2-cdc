@@ -25,7 +25,7 @@ CREATE TABLE es_products (
  ) WITH (
      'connector' = 'elasticsearch-7',
      'hosts' = 'http://elasticsearch:9200',
-     'index' = 'enriched_products_1'
+     'index' = 'enriched_products'
  );
 
 INSERT INTO es_products SELECT * FROM products;

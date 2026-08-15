@@ -1,8 +1,11 @@
-chmod -R 777 tmp
+# Paimon 查询指南
 
-      - ../tmp/paimon:/tmp/paimon # 持久化 Paimon 数据 warehouse file 挂载 
+> 前置：宿主机需对 `tmp/paimon` 有写权限，首次启动前执行 `chmod -R 777 tmp`。
 
-# LOAP Query
+## OLAP 查询（批模式）
+
+在 sql-client 中：
+
 ```sql
 -- use tableau result mode
 SET 'sql-client.execution.result-mode' = 'tableau';
@@ -15,7 +18,8 @@ SET 'execution.runtime-mode' = 'batch';
 SELECT * FROM word_count;
 ```
 
-# Streaming Query
+## Streaming 查询（流模式）
+
 ```sql
 -- switch to streaming mode
 SET 'execution.runtime-mode' = 'streaming';

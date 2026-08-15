@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose files
+        run: |
+          sudo apt-get update && sudo apt-get install -y yamllint
+          yamllint -d relaxed data/docker-compose.yml compute/docker-compose.yml
+
+      - name: Check scripts are non-empty
+        run: |
+          fail=0
+          for f in scripts/*.sql data/init/*.sql; do
+            if [ ! -s "$f" ]; then echo "ERROR: $f is empty"; fail=1; fi
+          done
+          exit $fail
+
+      - name: Basic SQL sanity check
+        run: |
+          # 每个脚本必须以分号结尾的语句，且无未闭合括号
+          for f in scripts/*.sql data/init/*.sql; do
+            open=$(grep -o '(' "$f" | wc -l)
+            close=$(grep -o ')' "$f" | wc -l)
+            if [ "$open" != "$close" ]; then
+              echo "ERROR: unbalanced parentheses in $f ($open open vs $close close)"
+              exit 1
+            fi
+          done
+          echo "All checks passed."
