@@ -1,0 +1,4 @@
+# 统一 Unix 行尾，CI lint 要求 \n
+* text=auto eol=lf
+*.png binary
+*.jar binary
